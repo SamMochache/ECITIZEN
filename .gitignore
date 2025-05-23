@@ -1,0 +1,18 @@
+#virtual env
+/secure
+
+#pycache
+__pycache__/
+*.py[cod]
+
+#/migrations
+migrations/
+
+#database
+*.sqlite3
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.sqlite-journal
+*.sqlite-wal
