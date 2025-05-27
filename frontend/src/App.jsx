@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './stores/authStore';
-import ErrorBoundary from './components/ErrorBoundary';
+import ErrorAlert from './components/ErrorAlert';
 import LoadingSpinner from './components/LoadingSpinner';
 import Navbar from './components/Navbar';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -51,7 +51,7 @@ function App() {
   const { isAuthenticated } = useAuthStore();
 
   return (
-    <ErrorBoundary>
+    <ErrorAlert>
       <QueryClientProvider client={queryClient}>
         <Router>
           <div className="App">
@@ -154,7 +154,7 @@ function App() {
           </div>
         </Router>
       </QueryClientProvider>
-    </ErrorBoundary>
+    </ErrorAlert>
   );
 }
 

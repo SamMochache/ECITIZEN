@@ -33,7 +33,10 @@ export const useAuthStore = create(
           
           return { success: true };
         } catch (error) {
-          const errorMessage = error.response?.data?.detail || 'Login failed';
+          console.error('Login error:', error.response?.data);
+          const errorMessage = error.response?.data?.detail || 
+                              error.response?.data?.non_field_errors?.[0] ||
+                              'Login failed';
           set({ 
             error: errorMessage, 
             isLoading: false,
@@ -50,13 +53,36 @@ export const useAuthStore = create(
       register: async (userData) => {
         set({ isLoading: true, error: null });
         try {
-          await api.post('/api/users/register/', userData);
+          const response = await api.post('/api/users/register/', userData);
           set({ isLoading: false, error: null });
-          return { success: true };
+          return { success: true, data: response.data };
         } catch (error) {
-          const errorMessage = error.response?.data?.email?.[0] || 
-                              error.response?.data?.password?.[0] || 
-                              'Registration failed';
+          console.error('Registration error:', error.response?.data);
+          
+          // Handle different types of errors from Django
+          let errorMessage = 'Registration failed';
+          
+          if (error.response?.data) {
+            const errorData = error.response.data;
+            
+            // Handle field-specific errors
+            if (errorData.email) {
+              errorMessage = Array.isArray(errorData.email) ? errorData.email[0] : errorData.email;
+            } else if (errorData.username) {
+              errorMessage = Array.isArray(errorData.username) ? errorData.username[0] : errorData.username;
+            } else if (errorData.password) {
+              errorMessage = Array.isArray(errorData.password) ? errorData.password[0] : errorData.password;
+            } else if (errorData.password2) {
+              errorMessage = Array.isArray(errorData.password2) ? errorData.password2[0] : errorData.password2;
+            } else if (errorData.non_field_errors) {
+              errorMessage = Array.isArray(errorData.non_field_errors) ? errorData.non_field_errors[0] : errorData.non_field_errors;
+            } else if (errorData.detail) {
+              errorMessage = errorData.detail;
+            } else if (typeof errorData === 'string') {
+              errorMessage = errorData;
+            }
+          }
+          
           set({ error: errorMessage, isLoading: false });
           return { success: false, error: errorMessage };
         }
@@ -98,6 +124,7 @@ export const useAuthStore = create(
           
           return true;
         } catch (error) {
+          console.error('Token refresh error:', error);
           get().logout();
           return false;
         }
@@ -115,6 +142,7 @@ export const useAuthStore = create(
           });
           return { success: true };
         } catch (error) {
+          console.error('Profile update error:', error.response?.data);
           const errorMessage = error.response?.data?.detail || 'Profile update failed';
           set({ error: errorMessage, isLoading: false });
           return { success: false, error: errorMessage };
